@@ -6,7 +6,7 @@ import '../screens/splash_screen.dart';
 class GetAllInquiryRepo {
   static Future<GetAllInquiryResModel?> getAllInquiryrepo() async {
     //Map<String, String> header = {"Authorization": '${ApiRoutes.dataToken}'};
-    Map<String, String> header = {"Authorization": '${bearerToken}'};
+    Map<String, String> header = {"Authorization": 'Bearer ${bearerToken}'};
 
     var response = await API.apiHandlers(
         Url: ApiRoutes.getAllInquiry, apiTypes: ApiTypes.Get, header: header);

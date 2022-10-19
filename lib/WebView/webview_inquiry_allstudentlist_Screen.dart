@@ -193,7 +193,17 @@ class _WebviewInquiryAllStudentListScreenState
                                                 itemBuilder:
                                                     (BuildContext context,
                                                         int index) {
-                                                  return buildStudentCard();
+                                                  var data =
+                                                      getAllInquiryController
+                                                          .allInquiryStudentList!
+                                                          .data![index];
+                                                  return buildStudentCard(
+                                                      fullname: data.fullName!,
+                                                      email: data.email!,
+                                                      date: DateFormat(
+                                                              'dd-MM-yyyy')
+                                                          .format((data
+                                                              .inquiryDate)!));
                                                 },
                                               ))
                                   ],
@@ -1286,60 +1296,42 @@ class _WebviewInquiryAllStudentListScreenState
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Get.height * 0.012),
             border: Border.all(color: AppColor.greyColor)),
-        child: Row(
-          children: [
-            Container(
-              margin: EdgeInsets.only(left: Get.width * 0.01),
-              height: Get.height * 0.09,
-              width: Get.width * 0.045,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(Get.height * 0.012),
-                  image: DecorationImage(
-                      image: AssetImage(
-                        "assets/images/Image 1.png",
-                      ),
-                      fit: BoxFit.cover)),
-            ),
-            SizedBox(
-              width: Get.width * 0.01,
-            ),
-            Container(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    fullname,
-                    style: TextStyle(
-                      color: AppColor.blackColor,
-                      fontSize: Get.height * 0.021,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "Inter",
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: Get.height * 0.005),
-                    child: Text(
-                      email,
-                      style: TextStyle(
-                          fontSize: Get.height * 0.016,
-                          fontWeight: FontWeight.w400,
-                          fontFamily: "Inter",
-                          color: Color(0xff868585)),
-                    ),
-                  ),
-                  Text(
-                    "Inquiry Date : ${date} ",
-                    style: TextStyle(
-                        fontSize: Get.height * 0.016,
-                        fontWeight: FontWeight.w400,
-                        fontFamily: "Inter",
-                        color: Color(0xff868585)),
-                  )
-                ],
+        child: Container(
+          margin: EdgeInsets.only(left: Get.width * 0.02),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                fullname,
+                style: TextStyle(
+                  color: AppColor.blackColor,
+                  fontSize: Get.height * 0.021,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: "Inter",
+                ),
               ),
-            ),
-          ],
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: Get.height * 0.005),
+                child: Text(
+                  email,
+                  style: TextStyle(
+                      fontSize: Get.height * 0.016,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: "Inter",
+                      color: Color(0xff868585)),
+                ),
+              ),
+              Text(
+                "Inquiry Date : ${date} ",
+                style: TextStyle(
+                    fontSize: Get.height * 0.016,
+                    fontWeight: FontWeight.w400,
+                    fontFamily: "Inter",
+                    color: Color(0xff868585)),
+              )
+            ],
+          ),
         ),
       ),
     );
