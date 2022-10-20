@@ -1,7 +1,8 @@
 import 'package:codeline_info_responsive_ui/api_handler/handlers.dart';
 import 'package:codeline_info_responsive_ui/constant/api_routes.dart';
-import '../models/res/get_students_details_res_model.dart';
-import '../screens/splash_screen.dart';
+import 'package:codeline_info_responsive_ui/constant/const.dart';
+import 'package:codeline_info_responsive_ui/models/res/get_students_details_res_model.dart';
+
 
 class GetStudentsDetailsRepo {
   static Future<GetStudentsDetailsResModel?> getStudentsDetails(int id) async {

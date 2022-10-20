@@ -1,9 +1,10 @@
 import 'dart:convert';
-import 'package:codeline_info_responsive_ui/screens/splash_screen.dart';
+
+import 'package:codeline_info_responsive_ui/constant/const.dart';
+
 import '../api_handler/handlers.dart';
 import '../constant/api_routes.dart';
 
-//String? token ;
 String? token =
     "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI0IiwidXNlcm5hbWUiOiJtYWxhbmluaWtzQGdtYWlsLmNvbSIsInVzZXJUeXBlIjoiYWRtaW4ifQ.R6dHZTsnrH2x3hgWDFJUlo0cGF6IiBvUFAaVflj2ljo";
 

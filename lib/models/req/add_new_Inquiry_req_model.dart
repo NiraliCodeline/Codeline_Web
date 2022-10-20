@@ -2,6 +2,7 @@
 //
 //     final addNewInquiryReqModel = addNewInquiryReqModelFromJson(jsonString);
 
+import 'package:meta/meta.dart';
 import 'dart:convert';
 
 AddNewInquiryReqModel addNewInquiryReqModelFromJson(String str) =>
@@ -30,7 +31,7 @@ class AddNewInquiryReqModel {
   String? inquiryDate;
   String? education;
   String? reference;
-  List<String>? course;
+  List<dynamic>? course;
   String? status;
   String? counselled;
   String? remarks;
@@ -43,7 +44,7 @@ class AddNewInquiryReqModel {
         inquiryDate: json["inquiry_date"],
         education: json["education"],
         reference: json["reference"],
-        course: List<String>.from(json["course"].map((x) => x)),
+        course: List<dynamic>.from(json["course"].map((x) => x)),
         status: json["status"],
         counselled: json["counselled"],
         remarks: json["remarks"],

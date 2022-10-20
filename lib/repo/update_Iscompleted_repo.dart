@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:codeline_info_responsive_ui/api_handler/handlers.dart';
 import 'package:codeline_info_responsive_ui/constant/api_routes.dart';
-import '../models/req/update_Iscompleted_req_model.dart';
-import '../screens/splash_screen.dart';
+import 'package:codeline_info_responsive_ui/constant/const.dart';
+import 'package:codeline_info_responsive_ui/models/req/update_Iscompleted_req_model.dart';
 
 class UpdateIsCompletedRepo {
   static Future<bool> updateIsCompletedrepo(

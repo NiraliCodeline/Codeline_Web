@@ -1,26 +1,26 @@
+import 'package:codeline_info_responsive_ui/models/res/get_Inquiry_details_res_model.dart';
+import 'package:codeline_info_responsive_ui/repo/get_Inquiry_details_repo.dart';
 import 'package:get/get.dart';
 
-import '../models/res/get_Inquiry_details_res_model.dart';
-import '../repo/get_Inquiry_details_repo.dart';
-
 class GetInquiryDetailsController extends GetxController {
-  final int id;
-  var isLoading = false.obs;
+  //final int id;
+  final isLoading = false.obs;
   GetInquiryDetailsResModel? allInquiryDetailsList;
 
-  GetInquiryDetailsController(this.id);
+  //GetInquiryDetailsController(this.id);
 
   @override
   void onInit() {
-    fetchInquiryDetailsStudent();
+    //fetchInquiryDetailsStudent();
     super.onInit();
-    update();
+    //update();
   }
 
-  void fetchInquiryDetailsStudent() async {
+  void fetchInquiryDetailsStudent({int? id}) async {
     try {
-      isLoading(true);
-      var allStudents = await GetInquiryDetailsRepo.getInquiryDetailsrepo(id);
+      isLoading.value = true;
+
+      var allStudents = await GetInquiryDetailsRepo.getInquiryDetailsrepo(id!);
       if (allStudents != null) {
         allInquiryDetailsList = allStudents;
 

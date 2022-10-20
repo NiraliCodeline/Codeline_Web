@@ -1,8 +1,7 @@
 import 'dart:convert';
-
-import '../api_handler/handlers.dart';
-import '../constant/api_routes.dart';
-import '../screens/splash_screen.dart';
+import 'package:codeline_info_responsive_ui/api_handler/handlers.dart';
+import 'package:codeline_info_responsive_ui/constant/api_routes.dart';
+import 'package:codeline_info_responsive_ui/constant/const.dart';
 
 class TwoPhaseAuthenticationRepo {
   static Future<Map<String, dynamic>> twoPhaseAuthMethod(

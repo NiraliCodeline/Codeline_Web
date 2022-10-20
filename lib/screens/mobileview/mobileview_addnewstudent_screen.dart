@@ -132,7 +132,7 @@ class _MobileViewAddNewStudentScreenState
 
   Future<String?> uploadUserImage({String? fileName}) async {
     Map<String, String> header = {
-      "Authorization": '${bearerToken}',
+      //"Authorization": '${bearerToken}',
       "Content-Type": "multipart/form-data"
     };
 

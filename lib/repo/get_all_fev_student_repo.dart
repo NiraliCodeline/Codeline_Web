@@ -1,7 +1,7 @@
 import 'package:codeline_info_responsive_ui/api_handler/handlers.dart';
 import 'package:codeline_info_responsive_ui/constant/api_routes.dart';
+import 'package:codeline_info_responsive_ui/constant/const.dart';
 import '../models/res/get_all_fev_student_res_model.dart';
-import '../screens/splash_screen.dart';
 
 class GetAllFevStudentRepo {
   static Future<GetAllFevStudentResModel?> getAllFevStudentRepo() async {

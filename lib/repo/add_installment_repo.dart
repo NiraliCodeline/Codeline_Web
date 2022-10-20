@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:codeline_info_responsive_ui/api_handler/handlers.dart';
 import 'package:codeline_info_responsive_ui/constant/api_routes.dart';
-import 'package:codeline_info_responsive_ui/screens/splash_screen.dart';
-import '../models/req/add_installment_req_model.dart';
+import 'package:codeline_info_responsive_ui/constant/const.dart';
+import 'package:codeline_info_responsive_ui/models/req/add_installment_req_model.dart';
 
 class AddInstallmentRepo {
   static Future<bool> updateInstallment(

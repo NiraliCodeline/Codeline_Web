@@ -25,7 +25,7 @@ class WebViewAllStudentScreen extends StatefulWidget {
 }
 
 //final int studentId;
-int? studentId = 0;
+int? studentID = 0;
 
 RxBool updateLoading = false.obs;
 
@@ -57,7 +57,7 @@ class _WebViewAllStudentScreenState extends State<WebViewAllStudentScreen> {
   }
 
   getInfo() async {
-    await getStudentsDetailsController.fetchAllStudentDetails(id: studentId);
+    await getStudentsDetailsController.fetchAllStudentDetails(id: studentID);
   }
 
   @override
@@ -910,7 +910,7 @@ class _WebViewAllStudentScreenState extends State<WebViewAllStudentScreen> {
 
                                                                     Get.back();
                                                                     await getStudentsDetailsController.updateServerInstallment(
-                                                                        studentId!
+                                                                        studentID!
                                                                         //widget.studentId
                                                                         );
                                                                   },
@@ -1144,7 +1144,7 @@ class _WebViewAllStudentScreenState extends State<WebViewAllStudentScreen> {
                                                                           updateCurrentCourseReqModel.course =
                                                                               course[index];
                                                                           updateCurrentCourseReqModel.studentId =
-                                                                              studentId;
+                                                                              studentID;
                                                                           //widget.studentId;
 
                                                                           Get.back();
@@ -1357,7 +1357,7 @@ class _WebViewAllStudentScreenState extends State<WebViewAllStudentScreen> {
                                                                               Get.back();
                                                                               updateBatchController.updateLocalBatch(index: index, isDone: (updateBatchController.allbatch![index].currentBatch) == 0 ? 1 : 0);
                                                                               getStudentsDetailsController.isLoading.value = true;
-                                                                              await updateBatchController.updateServerBatch(studentId!
+                                                                              await updateBatchController.updateServerBatch(studentID!
                                                                                   //widget.studentId
                                                                                   );
                                                                               getStudentsDetailsController.isLoading.value = false;
@@ -1464,589 +1464,7 @@ class _WebViewAllStudentScreenState extends State<WebViewAllStudentScreen> {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  return SimpleDialog(
-                    shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(Get.height * 0.012)),
-                    children: [
-                      SizedBox(
-                        height: Get.height * 0.02,
-                      ),
-                      Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: Get.width * 0.02),
-                        child: Row(
-                          children: [
-                            Container(
-                              height: Get.height * 0.09,
-                              width: Get.width * 0.045,
-                              decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.circular(Get.height * 0.012),
-                                  image: DecorationImage(
-                                      image: AssetImage(
-                                        "assets/images/Image 1.png",
-                                      ),
-                                      fit: BoxFit.cover)),
-                            ),
-                            SizedBox(
-                              width: Get.width * 0.025,
-                            ),
-                            Container(
-                              height: Get.height * 0.07,
-                              width: Get.width * 0.18,
-                              child: TextFormField(
-                                controller: fullNameController,
-                                decoration: InputDecoration(
-                                  prefixIcon: Padding(
-                                    padding: EdgeInsets.all(Get.width * 0.004),
-                                    child: Image(
-                                      image:
-                                          AssetImage("assets/images/User.png"),
-                                      height: 5,
-                                      width: 5,
-                                      //fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                  contentPadding: EdgeInsets.symmetric(
-                                      vertical: Get.height * 0.025,
-                                      horizontal: Get.width * 0.03),
-                                  labelText: "STUDENT FULL NAME",
-                                  labelStyle: TextStyle(
-                                      color: AppColor.secondaryColor,
-                                      fontSize: Get.height * 0.017,
-                                      fontFamily: "Inter",
-                                      fontWeight: FontWeight.w500),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: Get.height * 0.02,
-                      ),
-                      Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: Get.width * 0.02),
-                        child: Row(
-                          children: [
-                            Container(
-                              height: Get.height * 0.07,
-                              width: Get.width * 0.15,
-                              child: TextFormField(
-                                controller: emailController,
-                                decoration: InputDecoration(
-                                  prefixIcon: Padding(
-                                    padding: EdgeInsets.all(Get.width * 0.004),
-                                    child: Image(
-                                      image:
-                                          AssetImage("assets/images/Mail.png"),
-                                      height: 5,
-                                      width: 5,
-                                      //fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                  contentPadding: EdgeInsets.symmetric(
-                                      vertical: Get.height * 0.025,
-                                      horizontal: Get.width * 0.03),
-                                  labelText: "EMAIL ADDRESS",
-                                  labelStyle: TextStyle(
-                                      color: AppColor.secondaryColor,
-                                      fontSize: Get.height * 0.017,
-                                      fontFamily: "Inter",
-                                      fontWeight: FontWeight.w500),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: Get.width * 0.02,
-                            ),
-                            Container(
-                              height: Get.height * 0.07,
-                              width: Get.width * 0.15,
-                              child: TextFormField(
-                                controller: mobileNoController,
-                                decoration: InputDecoration(
-                                  prefixIcon: Padding(
-                                    padding: EdgeInsets.all(Get.width * 0.004),
-                                    child: Image(
-                                      image:
-                                          AssetImage("assets/images/Phone.png"),
-                                      height: 5,
-                                      width: 5,
-                                      //fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                  contentPadding: EdgeInsets.symmetric(
-                                      vertical: Get.height * 0.025,
-                                      horizontal: Get.width * 0.03),
-                                  labelText: "MOBILE NO.",
-                                  labelStyle: TextStyle(
-                                      color: AppColor.secondaryColor,
-                                      fontSize: Get.height * 0.017,
-                                      fontFamily: "Inter",
-                                      fontWeight: FontWeight.w500),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: Get.height * 0.02,
-                      ),
-                      Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: Get.width * 0.02),
-                        child: Row(
-                          children: [
-                            Container(
-                              height: Get.height * 0.07,
-                              width: Get.width * 0.15,
-                              child: TextFormField(
-                                controller: JoiningDateController,
-                                decoration: InputDecoration(
-                                  prefixIcon: Padding(
-                                    padding: EdgeInsets.all(Get.width * 0.004),
-                                    child: Image(
-                                      image: AssetImage(
-                                          "assets/images/Calendar.png"),
-                                      height: 5,
-                                      width: 5,
-                                      //fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                  contentPadding: EdgeInsets.symmetric(
-                                      vertical: Get.height * 0.025,
-                                      horizontal: Get.width * 0.03),
-                                  labelText: "JOINING DATE",
-                                  labelStyle: TextStyle(
-                                      color: AppColor.secondaryColor,
-                                      fontSize: Get.height * 0.017,
-                                      fontFamily: "Inter",
-                                      fontWeight: FontWeight.w500),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: Get.width * 0.02,
-                            ),
-                            Container(
-                              height: Get.height * 0.07,
-                              width: Get.width * 0.15,
-                              child: TextFormField(
-                                controller: addressController,
-                                decoration: InputDecoration(
-                                  prefixIcon: Padding(
-                                    padding: EdgeInsets.all(Get.width * 0.004),
-                                    child: Image(
-                                      image:
-                                          AssetImage("assets/images/Visit.png"),
-                                      height: 5,
-                                      width: 5,
-                                      //fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                  contentPadding: EdgeInsets.symmetric(
-                                      vertical: Get.height * 0.025,
-                                      horizontal: Get.width * 0.03),
-                                  labelText: "ADDRESS",
-                                  labelStyle: TextStyle(
-                                      color: AppColor.secondaryColor,
-                                      fontSize: Get.height * 0.017,
-                                      fontFamily: "Inter",
-                                      fontWeight: FontWeight.w500),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: AppColor.greyColor),
-                                    borderRadius: BorderRadius.circular(
-                                        Get.height * 0.012),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: Get.height * 0.02,
-                      ),
-                      Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: Get.width * 0.02),
-                        child: Row(
-                          children: [
-                            Container(
-                              height: Get.height * 0.14,
-                              width: Get.width * 0.15,
-                              //color: Colors.yellow,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Total Fess",
-                                    style: TextStyle(
-                                      color: AppColor.blackColor,
-                                      fontSize: Get.height * 0.023,
-                                      fontWeight: FontWeight.w600,
-                                      fontFamily: "Inter",
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: Get.height * 0.02,
-                                  ),
-                                  Container(
-                                    height: Get.height * 0.07,
-                                    width: Get.width * 0.15,
-                                    child: TextFormField(
-                                      controller: feesController,
-                                      decoration: InputDecoration(
-                                        prefixIcon: Padding(
-                                          padding:
-                                              EdgeInsets.all(Get.width * 0.004),
-                                          child: Image(
-                                            image: AssetImage(
-                                                "assets/images/Activity Feed.png"),
-                                            height: 5,
-                                            width: 5,
-                                            //fit: BoxFit.fill,
-                                          ),
-                                        ),
-                                        contentPadding: EdgeInsets.symmetric(
-                                            vertical: Get.height * 0.025,
-                                            horizontal: Get.width * 0.03),
-                                        labelText: "Fees",
-                                        labelStyle: TextStyle(
-                                            color: AppColor.secondaryColor,
-                                            fontSize: Get.height * 0.017,
-                                            fontFamily: "Inter",
-                                            fontWeight: FontWeight.w500),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: AppColor.greyColor),
-                                          borderRadius: BorderRadius.circular(
-                                              Get.height * 0.012),
-                                        ),
-                                        border: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: AppColor.greyColor),
-                                          borderRadius: BorderRadius.circular(
-                                              Get.height * 0.012),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: AppColor.greyColor),
-                                          borderRadius: BorderRadius.circular(
-                                              Get.height * 0.012),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              width: Get.width * 0.02,
-                            ),
-                            Container(
-                              height: Get.height * 0.14,
-                              width: Get.width * 0.15,
-                              // color: Colors.yellow,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Total Fess",
-                                    style: TextStyle(
-                                      color: AppColor.blackColor,
-                                      fontSize: Get.height * 0.023,
-                                      fontWeight: FontWeight.w600,
-                                      fontFamily: "Inter",
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: Get.height * 0.01,
-                                  ),
-                                  Container(
-                                      height: Get.height * 0.095,
-                                      //color: Colors.green,
-                                      child: GridView.builder(
-                                        itemCount: 6,
-                                        gridDelegate:
-                                            SliverGridDelegateWithFixedCrossAxisCount(
-                                                mainAxisExtent:
-                                                    Get.height * 0.04,
-                                                crossAxisCount: 3,
-                                                crossAxisSpacing:
-                                                    Get.width * 0.01,
-                                                mainAxisSpacing:
-                                                    Get.height * 0.01),
-                                        itemBuilder:
-                                            (BuildContext context, int index) {
-                                          return Container(
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        Get.height * 0.012),
-                                                color: AppColor.primaryColor),
-                                            child: Center(
-                                              child: Text(
-                                                "Course",
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        Get.height * 0.015,
-                                                    fontWeight: FontWeight.w500,
-                                                    fontFamily: "Inter",
-                                                    color: AppColor.whiteColor),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      )),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: Get.height * 0.02,
-                      ),
-                      Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: Get.width * 0.02),
-                        child: Row(
-                          children: [
-                            Container(
-                              height: Get.height * 0.15,
-                              width: Get.width * 0.15,
-                              // color: Colors.yellow,
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "Installment",
-                                        style: TextStyle(
-                                          color: AppColor.blackColor,
-                                          fontSize: Get.height * 0.023,
-                                          fontWeight: FontWeight.w600,
-                                          fontFamily: "Inter",
-                                        ),
-                                      ),
-                                      Container(
-                                        height: Get.height * 0.04,
-                                        child: FloatingActionButton(
-                                            onPressed: () {},
-                                            elevation: 0.0,
-                                            backgroundColor:
-                                                AppColor.primaryColor,
-                                            child: Icon(
-                                              Icons.add,
-                                              size: Get.height * 0.03,
-                                              color: AppColor.whiteColor,
-                                            )),
-                                      )
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: Get.height * 0.02,
-                                  ),
-                                  Container(
-                                      height: Get.height * 0.09,
-                                      //color: Colors.green,
-                                      child: GridView.builder(
-                                        itemCount: 6,
-                                        gridDelegate:
-                                            SliverGridDelegateWithFixedCrossAxisCount(
-                                                mainAxisExtent:
-                                                    Get.height * 0.038,
-                                                crossAxisCount: 3,
-                                                crossAxisSpacing:
-                                                    Get.width * 0.01,
-                                                mainAxisSpacing:
-                                                    Get.height * 0.01),
-                                        itemBuilder:
-                                            (BuildContext context, int index) {
-                                          return Container(
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        Get.height * 0.012),
-                                                color: AppColor.primaryColor),
-                                            child: Center(
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Container(
-                                                    height: Get.height * 0.013,
-                                                    width: Get.width * 0.013,
-                                                    decoration: BoxDecoration(
-                                                        shape: BoxShape.circle,
-                                                        border: Border.all(
-                                                            color: AppColor
-                                                                .whiteColor)),
-                                                    child: Center(
-                                                      child: Text(
-                                                        "1",
-                                                        style: TextStyle(
-                                                            fontSize:
-                                                                Get.height *
-                                                                    0.011,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontFamily: "Inter",
-                                                            color: AppColor
-                                                                .whiteColor),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    "10000",
-                                                    style: TextStyle(
-                                                        fontSize:
-                                                            Get.height * 0.015,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontFamily: "Inter",
-                                                        color: AppColor
-                                                            .whiteColor),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      )),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              width: Get.width * 0.02,
-                            ),
-                            Container(
-                              height: Get.height * 0.15,
-                              width: Get.width * 0.15,
-                              //color: Colors.yellow,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  MaterialButton(
-                                    onPressed: () {},
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            Get.height * 0.012)),
-                                    color: AppColor.primaryColor,
-                                    height: Get.height * 0.06,
-                                    minWidth: Get.width * 0.15,
-                                    child: Text(
-                                      "Add & Save",
-                                      style: TextStyle(
-                                          fontSize: Get.height * 0.019,
-                                          fontWeight: FontWeight.w500,
-                                          fontFamily: "Inter",
-                                          color: Colors.white),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: Get.height * 0.02,
-                      ),
-                    ],
-                  );
+                  return addNewStudentDialog();
                 },
               );
             },
@@ -2063,16 +1481,534 @@ class _WebViewAllStudentScreenState extends State<WebViewAllStudentScreen> {
     );
   }
 
+  SimpleDialog addNewStudentDialog() {
+    return SimpleDialog(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Get.height * 0.012)),
+      children: [
+        SizedBox(
+          height: Get.height * 0.02,
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
+          child: Row(
+            children: [
+              Container(
+                height: Get.height * 0.09,
+                width: Get.width * 0.045,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    image: DecorationImage(
+                        image: AssetImage(
+                          "assets/images/Image 1.png",
+                        ),
+                        fit: BoxFit.cover)),
+              ),
+              SizedBox(
+                width: Get.width * 0.025,
+              ),
+              Container(
+                height: Get.height * 0.07,
+                width: Get.width * 0.18,
+                child: TextFormField(
+                  controller: fullNameController,
+                  decoration: InputDecoration(
+                    prefixIcon: Padding(
+                      padding: EdgeInsets.all(Get.width * 0.004),
+                      child: Image(
+                        image: AssetImage("assets/images/User.png"),
+                        height: 5,
+                        width: 5,
+                        //fit: BoxFit.fill,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: Get.height * 0.025,
+                        horizontal: Get.width * 0.03),
+                    labelText: "STUDENT FULL NAME",
+                    labelStyle: TextStyle(
+                        color: AppColor.secondaryColor,
+                        fontSize: Get.height * 0.017,
+                        fontFamily: "Inter",
+                        fontWeight: FontWeight.w500),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: Get.height * 0.02,
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
+          child: Row(
+            children: [
+              Container(
+                height: Get.height * 0.07,
+                width: Get.width * 0.15,
+                child: TextFormField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    prefixIcon: Padding(
+                      padding: EdgeInsets.all(Get.width * 0.004),
+                      child: Image(
+                        image: AssetImage("assets/images/Mail.png"),
+                        height: 5,
+                        width: 5,
+                        //fit: BoxFit.fill,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: Get.height * 0.025,
+                        horizontal: Get.width * 0.03),
+                    labelText: "EMAIL ADDRESS",
+                    labelStyle: TextStyle(
+                        color: AppColor.secondaryColor,
+                        fontSize: Get.height * 0.017,
+                        fontFamily: "Inter",
+                        fontWeight: FontWeight.w500),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: Get.width * 0.02,
+              ),
+              Container(
+                height: Get.height * 0.07,
+                width: Get.width * 0.15,
+                child: TextFormField(
+                  controller: mobileNoController,
+                  decoration: InputDecoration(
+                    prefixIcon: Padding(
+                      padding: EdgeInsets.all(Get.width * 0.004),
+                      child: Image(
+                        image: AssetImage("assets/images/Phone.png"),
+                        height: 5,
+                        width: 5,
+                        //fit: BoxFit.fill,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: Get.height * 0.025,
+                        horizontal: Get.width * 0.03),
+                    labelText: "MOBILE NO.",
+                    labelStyle: TextStyle(
+                        color: AppColor.secondaryColor,
+                        fontSize: Get.height * 0.017,
+                        fontFamily: "Inter",
+                        fontWeight: FontWeight.w500),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: Get.height * 0.02,
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
+          child: Row(
+            children: [
+              Container(
+                height: Get.height * 0.07,
+                width: Get.width * 0.15,
+                child: TextFormField(
+                  controller: JoiningDateController,
+                  decoration: InputDecoration(
+                    prefixIcon: Padding(
+                      padding: EdgeInsets.all(Get.width * 0.004),
+                      child: Image(
+                        image: AssetImage("assets/images/Calendar.png"),
+                        height: 5,
+                        width: 5,
+                        //fit: BoxFit.fill,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: Get.height * 0.025,
+                        horizontal: Get.width * 0.03),
+                    labelText: "JOINING DATE",
+                    labelStyle: TextStyle(
+                        color: AppColor.secondaryColor,
+                        fontSize: Get.height * 0.017,
+                        fontFamily: "Inter",
+                        fontWeight: FontWeight.w500),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: Get.width * 0.02,
+              ),
+              Container(
+                height: Get.height * 0.07,
+                width: Get.width * 0.15,
+                child: TextFormField(
+                  controller: addressController,
+                  decoration: InputDecoration(
+                    prefixIcon: Padding(
+                      padding: EdgeInsets.all(Get.width * 0.004),
+                      child: Image(
+                        image: AssetImage("assets/images/Visit.png"),
+                        height: 5,
+                        width: 5,
+                        //fit: BoxFit.fill,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: Get.height * 0.025,
+                        horizontal: Get.width * 0.03),
+                    labelText: "ADDRESS",
+                    labelStyle: TextStyle(
+                        color: AppColor.secondaryColor,
+                        fontSize: Get.height * 0.017,
+                        fontFamily: "Inter",
+                        fontWeight: FontWeight.w500),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.greyColor),
+                      borderRadius: BorderRadius.circular(Get.height * 0.012),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: Get.height * 0.02,
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
+          child: Row(
+            children: [
+              Container(
+                height: Get.height * 0.14,
+                width: Get.width * 0.15,
+                //color: Colors.yellow,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Total Fess",
+                      style: TextStyle(
+                        color: AppColor.blackColor,
+                        fontSize: Get.height * 0.023,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: "Inter",
+                      ),
+                    ),
+                    SizedBox(
+                      height: Get.height * 0.02,
+                    ),
+                    Container(
+                      height: Get.height * 0.07,
+                      width: Get.width * 0.15,
+                      child: TextFormField(
+                        controller: feesController,
+                        decoration: InputDecoration(
+                          prefixIcon: Padding(
+                            padding: EdgeInsets.all(Get.width * 0.004),
+                            child: Image(
+                              image:
+                                  AssetImage("assets/images/Activity Feed.png"),
+                              height: 5,
+                              width: 5,
+                              //fit: BoxFit.fill,
+                            ),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                              vertical: Get.height * 0.025,
+                              horizontal: Get.width * 0.03),
+                          labelText: "Fees",
+                          labelStyle: TextStyle(
+                              color: AppColor.secondaryColor,
+                              fontSize: Get.height * 0.017,
+                              fontFamily: "Inter",
+                              fontWeight: FontWeight.w500),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColor.greyColor),
+                            borderRadius:
+                                BorderRadius.circular(Get.height * 0.012),
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColor.greyColor),
+                            borderRadius:
+                                BorderRadius.circular(Get.height * 0.012),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColor.greyColor),
+                            borderRadius:
+                                BorderRadius.circular(Get.height * 0.012),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: Get.width * 0.02,
+              ),
+              Container(
+                height: Get.height * 0.14,
+                width: Get.width * 0.15,
+                // color: Colors.yellow,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Course",
+                      style: TextStyle(
+                        color: AppColor.blackColor,
+                        fontSize: Get.height * 0.023,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: "Inter",
+                      ),
+                    ),
+                    SizedBox(
+                      height: Get.height * 0.01,
+                    ),
+                    Container(
+                        height: Get.height * 0.095,
+                        //color: Colors.green,
+                        child: GridView.builder(
+                          itemCount: 6,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                  mainAxisExtent: Get.height * 0.04,
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: Get.width * 0.01,
+                                  mainAxisSpacing: Get.height * 0.01),
+                          itemBuilder: (BuildContext context, int index) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.circular(Get.height * 0.012),
+                                  color: AppColor.primaryColor),
+                              child: Center(
+                                child: Text(
+                                  "Course",
+                                  style: TextStyle(
+                                      fontSize: Get.height * 0.015,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: "Inter",
+                                      color: AppColor.whiteColor),
+                                ),
+                              ),
+                            );
+                          },
+                        )),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: Get.height * 0.02,
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
+          child: Row(
+            children: [
+              Container(
+                height: Get.height * 0.15,
+                width: Get.width * 0.15,
+                // color: Colors.yellow,
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Installment",
+                          style: TextStyle(
+                            color: AppColor.blackColor,
+                            fontSize: Get.height * 0.023,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: "Inter",
+                          ),
+                        ),
+                        Container(
+                          height: Get.height * 0.04,
+                          child: FloatingActionButton(
+                              onPressed: () {},
+                              elevation: 0.0,
+                              backgroundColor: AppColor.primaryColor,
+                              child: Icon(
+                                Icons.add,
+                                size: Get.height * 0.03,
+                                color: AppColor.whiteColor,
+                              )),
+                        )
+                      ],
+                    ),
+                    SizedBox(
+                      height: Get.height * 0.02,
+                    ),
+                    Container(
+                        height: Get.height * 0.09,
+                        //color: Colors.green,
+                        child: GridView.builder(
+                          itemCount: 6,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                  mainAxisExtent: Get.height * 0.038,
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: Get.width * 0.01,
+                                  mainAxisSpacing: Get.height * 0.01),
+                          itemBuilder: (BuildContext context, int index) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.circular(Get.height * 0.012),
+                                  color: AppColor.primaryColor),
+                              child: Center(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      height: Get.height * 0.013,
+                                      width: Get.width * 0.013,
+                                      decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                              color: AppColor.whiteColor)),
+                                      child: Center(
+                                        child: Text(
+                                          "1",
+                                          style: TextStyle(
+                                              fontSize: Get.height * 0.011,
+                                              fontWeight: FontWeight.w500,
+                                              fontFamily: "Inter",
+                                              color: AppColor.whiteColor),
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      "10000",
+                                      style: TextStyle(
+                                          fontSize: Get.height * 0.015,
+                                          fontWeight: FontWeight.w500,
+                                          fontFamily: "Inter",
+                                          color: AppColor.whiteColor),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        )),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: Get.width * 0.02,
+              ),
+              Container(
+                height: Get.height * 0.15,
+                width: Get.width * 0.15,
+                //color: Colors.yellow,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    MaterialButton(
+                      onPressed: () {},
+                      shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(Get.height * 0.012)),
+                      color: AppColor.primaryColor,
+                      height: Get.height * 0.06,
+                      minWidth: Get.width * 0.15,
+                      child: Text(
+                        "Add & Save",
+                        style: TextStyle(
+                            fontSize: Get.height * 0.019,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: "Inter",
+                            color: Colors.white),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: Get.height * 0.02,
+        ),
+      ],
+    );
+  }
+
   GestureDetector buildContainer(
       {List<dynamic>? data, int? index, String? formattedDate, var value}) {
     return GestureDetector(
       onTap: () {
-        studentId = int.parse(data[index].studentId);
+        studentID = int.parse(data[index].studentId);
         getAllStudentsController
             .onItemTapped(int.parse(data[index].studentId!));
 
-        print("STUDENT ID-------->>>>>>>>>>${studentId}");
-        getStudentsDetailsController.fetchAllStudentDetails(id: studentId);
+        print("STUDENT ID-------->>>>>>>>>>${studentID}");
+        getStudentsDetailsController.fetchAllStudentDetails(id: studentID);
 
         /*setState(() {
           getStudentsDetailsController.fetchAllStudentDetails(

@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             title: 'Codeline Infotech',
             theme: ThemeData.light(),
-            home: WebviewInquiryAllStudentListScreen());
+            home: WebViewAllStudentScreen());
       },
     );
   }

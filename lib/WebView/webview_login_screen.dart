@@ -1,3 +1,4 @@
+import 'package:codeline_info_responsive_ui/WebView/webview_homescreen.dart';
 import 'package:codeline_info_responsive_ui/constant/colors.dart';
 import 'package:codeline_info_responsive_ui/constant/progress_indicator.dart';
 import 'package:codeline_info_responsive_ui/controllers/internet_connectivity_controller.dart';
@@ -476,7 +477,7 @@ Future secretcodeDialog(
                             getDashboardDetailsController
                                 .fetchAllDashboardDetails()
                                 .then((value) {
-                              Get.offAll(AllViewHomeScreen());
+                              Get.offAll(WebViewHomeScreen());
                             });
                             // Get.offAll(HomeScreen());
                           } else {

@@ -7,6 +7,7 @@ class GetAllInquiryController extends GetxController {
   var isLoading = false.obs;
   List<Datum> searchResult = [];
   GetAllInquiryResModel? allInquiryStudentList;
+  var id = 0.obs;
 
   @override
   void onInit() {
@@ -34,6 +35,11 @@ class GetAllInquiryController extends GetxController {
 
   void addSearchResult(Datum value) {
     searchResult.add(value);
+    update();
+  }
+
+  void onItemTapped(int inquiryId) {
+    id.value = inquiryId;
     update();
   }
 }
