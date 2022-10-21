@@ -9,7 +9,7 @@ class AddNewInquiryRepo {
       AddNewInquiryReqModel addNewInquiryReqModel) async {
     //Map<String, String> header = {"Authorization": '${ApiRoutes.dataToken}'};
     Map<String, String> header = {
-      "Authorization": 'Bearer ${bearerToken}',
+      "Authorization": '${bearerToken}',
       //'Content-Type': 'application/json'
     };
     print("bearerToken-------${bearerToken}");

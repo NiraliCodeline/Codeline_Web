@@ -1,20 +1,31 @@
+import 'dart:io';
+import 'dart:math';
+import 'package:codeline_info_responsive_ui/constant/api_routes.dart';
 import 'package:codeline_info_responsive_ui/constant/colors.dart';
 import 'package:codeline_info_responsive_ui/constant/const.dart';
 import 'package:codeline_info_responsive_ui/constant/progress_indicator.dart';
+import 'package:codeline_info_responsive_ui/controllers/add_new_student_controller.dart';
 import 'package:codeline_info_responsive_ui/controllers/get_all_students_controller.dart';
 import 'package:codeline_info_responsive_ui/controllers/get_students_details_controller.dart';
+import 'package:codeline_info_responsive_ui/models/req/add_new_student_req_model.dart';
 import 'package:codeline_info_responsive_ui/models/req/update_Iscompleted_req_model.dart';
 import 'package:codeline_info_responsive_ui/models/req/update_Isfavourite_res_Model.dart';
 import 'package:codeline_info_responsive_ui/models/req/update_current_course_req_model.dart';
+import 'package:codeline_info_responsive_ui/repo/add_new_student_repo.dart';
 import 'package:codeline_info_responsive_ui/repo/update_Iscompleted_repo.dart';
 import 'package:codeline_info_responsive_ui/repo/update_Isfavourite_repo.dart';
 import 'package:codeline_info_responsive_ui/repo/update_current_course_repo.dart';
 import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image_picker_web/image_picker_web.dart';
 import 'package:intl/intl.dart';
 import 'package:progressive_image/progressive_image.dart';
+import 'package:dio/dio.dart' as dio;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class WebViewAllStudentScreen extends StatefulWidget {
   const WebViewAllStudentScreen({Key? key}) : super(key: key);
@@ -53,6 +64,7 @@ class _WebViewAllStudentScreenState extends State<WebViewAllStudentScreen> {
   @override
   void initState() {
     super.initState();
+    BatchesDropDown();
     //getInfo();
   }
 
@@ -1481,302 +1493,334 @@ class _WebViewAllStudentScreenState extends State<WebViewAllStudentScreen> {
     );
   }
 
-  SimpleDialog addNewStudentDialog() {
-    return SimpleDialog(
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(Get.height * 0.012)),
-      children: [
-        SizedBox(
-          height: Get.height * 0.02,
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
-          child: Row(
+  // add New Student api call
+
+  TextEditingController amountController = TextEditingController();
+
+  AddNewStudentController _addNewStudentController =
+      Get.put(AddNewStudentController());
+
+  RxBool isLoading = false.obs;
+
+  AddNewStudentReqModel addNewStudentReqModel = AddNewStudentReqModel();
+  Future updateClick() async {
+    isLoading.value = true;
+    String? url = await uploadUserImage(
+      fileName: "${Random().nextInt(1000)}${pickedFile!.path.split('/').first}",
+    );
+
+    print("IMAGE URL-----------1${url}");
+    addNewStudentReqModel.avatar = url;
+
+    addNewStudentReqModel.fullName = fullNameController.text.trim();
+    addNewStudentReqModel.email = emailController.text.trim();
+    addNewStudentReqModel.mobile = mobileNoController.text.trim();
+    addNewStudentReqModel.joiningDate = dateSelected;
+    addNewStudentReqModel.address = addressController.text.trim();
+    addNewStudentReqModel.course = _addNewStudentController.course;
+    addNewStudentReqModel.totalFees = feesController.text.trim();
+    addNewStudentReqModel.favorite = false;
+    addNewStudentReqModel.studentId = 70;
+
+    for (int i = 0; i < _addNewStudentController.batches.length; i++) {
+      addNewStudentReqModel.batch.add(Batch(
+          batch: _addNewStudentController.batches[i],
+          currentBatch: _addNewStudentController.batches[i] ==
+                  _addNewStudentController.batchesTime
+              ? 1
+              : 0));
+    }
+
+    print("batch Length: ${addNewStudentReqModel.batch.length}");
+
+    for (int i = 0; i < _addNewStudentController.installments.length; i++) {
+      addNewStudentReqModel.installments.add(Installment(
+          isDone: false,
+          installmentNo: (i + 1),
+          amount: _addNewStudentController.installments[i]));
+    }
+
+    addNewStudentReqModel.installments.forEach((element) {
+      print("amount: ${element.amount}");
+      print("installmentNo: ${element.installmentNo}");
+      print("isDone: ${element.isDone}");
+    });
+
+    bool result = await AddNewStudentRepo.getAllStudents(addNewStudentReqModel);
+
+    if (result == true) {
+      print("UPDATE SUCCESSFULLY-------->>>>>>>");
+      Get.back(result: {'update': true});
+    } else {
+      print("UPDATE FAILED-------->>>>>>>");
+      Get.snackbar("Message", "Update Failed.....");
+    }
+  }
+
+  final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
+  DateTime? _dateTime;
+
+  var dateSelected;
+
+  List<String> batchList = [
+    "10 to 12",
+    "12 to 2",
+    "2 to 4",
+    "4 to 6",
+  ];
+
+  List<String> courseItems = [
+    "C",
+    "C++",
+    "DART",
+    "FLUTTER",
+    "UI/UX",
+    "Node.js"
+  ];
+
+  BatchesDropDown() {
+    batchList.forEach((value) {
+      _addNewStudentController.batches.add(value);
+    });
+  }
+
+  //File? _image;
+  bool imageAvailable = false;
+  Uint8List? imageFile;
+  var pickedFile;
+  Uint8List? pickedFileBytes;
+  File _file = File("zz");
+  Uint8List webImage = Uint8List(10);
+  chooseImage1() async {
+    pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
+    // pickedFile = await ImagePickerWeb.getImageAsBytes();
+    pickedFileBytes = await pickedFile!.readAsBytes();
+    setState(() {
+      _file = File("a");
+      webImage = pickedFileBytes!;
+      imageAvailable = true;
+      imageFile = pickedFileBytes!;
+    });
+    print('WEB IMAGE----------${pickedFile.path}');
+    // uploadImageToStorage(pickedFile);
+  }
+
+  chooseImage() async {
+    var image = await ImagePickerWeb.getImageAsBytes();
+
+    setState(() {
+      imageFile = image!;
+      imageAvailable = true;
+    });
+    // File imgfile = File(image);
+    // Uint8List imgbytes1 = imgfile.readAsBytesSync();
+    // print('imageFile***********');
+    // File decodedimgfile = await File("image.jpg").writeAsBytes(imageFile!);
+    // print('imageFile---------${decodedimgfile}');
+  }
+
+  /*Future getImage() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+
+    final imageTemporary = File(image.path);
+
+    setState(() {
+      this._image = imageTemporary;
+    });
+    print("Image---------${_image}");
+  }*/
+
+  Future<String?> uploadUserImage({String? fileName}) async {
+    Map<String, String> header = {
+      "Authorization": '${bearerToken}',
+      "Content-Type": "multipart/form-data"
+    };
+
+    print("FileName:${fileName}");
+    dio.FormData formData = new dio.FormData.fromMap({
+      "image_url": await dio.MultipartFile.fromFile(pickedFile.path,
+          filename: pickedFile.path.split("/").last),
+    });
+    dio.Response response = await dio.Dio().post("${ApiRoutes.uploadAvatar}",
+        data: formData, options: dio.Options(headers: header));
+
+    print("data ${response.data}");
+
+    if (response.data['image_url'] != null) {
+      return response.data['image_url'];
+    } else {
+      return null;
+    }
+  }
+
+  StatefulBuilder addNewStudentDialog() {
+    return StatefulBuilder(
+      builder: (BuildContext context, void Function(void Function()) setState) {
+        return Form(
+          key: _formkey,
+          child: SimpleDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(Get.height * 0.012)),
             children: [
-              Container(
-                height: Get.height * 0.09,
-                width: Get.width * 0.045,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    image: DecorationImage(
-                        image: AssetImage(
-                          "assets/images/Image 1.png",
-                        ),
-                        fit: BoxFit.cover)),
-              ),
               SizedBox(
-                width: Get.width * 0.025,
+                height: Get.height * 0.02,
               ),
-              Container(
-                height: Get.height * 0.07,
-                width: Get.width * 0.18,
-                child: TextFormField(
-                  controller: fullNameController,
-                  decoration: InputDecoration(
-                    prefixIcon: Padding(
-                      padding: EdgeInsets.all(Get.width * 0.004),
-                      child: Image(
-                        image: AssetImage("assets/images/User.png"),
-                        height: 5,
-                        width: 5,
-                        //fit: BoxFit.fill,
-                      ),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                        vertical: Get.height * 0.025,
-                        horizontal: Get.width * 0.03),
-                    labelText: "STUDENT FULL NAME",
-                    labelStyle: TextStyle(
-                        color: AppColor.secondaryColor,
-                        fontSize: Get.height * 0.017,
-                        fontFamily: "Inter",
-                        fontWeight: FontWeight.w500),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(
-          height: Get.height * 0.02,
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
-          child: Row(
-            children: [
-              Container(
-                height: Get.height * 0.07,
-                width: Get.width * 0.15,
-                child: TextFormField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    prefixIcon: Padding(
-                      padding: EdgeInsets.all(Get.width * 0.004),
-                      child: Image(
-                        image: AssetImage("assets/images/Mail.png"),
-                        height: 5,
-                        width: 5,
-                        //fit: BoxFit.fill,
-                      ),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                        vertical: Get.height * 0.025,
-                        horizontal: Get.width * 0.03),
-                    labelText: "EMAIL ADDRESS",
-                    labelStyle: TextStyle(
-                        color: AppColor.secondaryColor,
-                        fontSize: Get.height * 0.017,
-                        fontFamily: "Inter",
-                        fontWeight: FontWeight.w500),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: Get.width * 0.02,
-              ),
-              Container(
-                height: Get.height * 0.07,
-                width: Get.width * 0.15,
-                child: TextFormField(
-                  controller: mobileNoController,
-                  decoration: InputDecoration(
-                    prefixIcon: Padding(
-                      padding: EdgeInsets.all(Get.width * 0.004),
-                      child: Image(
-                        image: AssetImage("assets/images/Phone.png"),
-                        height: 5,
-                        width: 5,
-                        //fit: BoxFit.fill,
-                      ),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                        vertical: Get.height * 0.025,
-                        horizontal: Get.width * 0.03),
-                    labelText: "MOBILE NO.",
-                    labelStyle: TextStyle(
-                        color: AppColor.secondaryColor,
-                        fontSize: Get.height * 0.017,
-                        fontFamily: "Inter",
-                        fontWeight: FontWeight.w500),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(
-          height: Get.height * 0.02,
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
-          child: Row(
-            children: [
-              Container(
-                height: Get.height * 0.07,
-                width: Get.width * 0.15,
-                child: TextFormField(
-                  controller: JoiningDateController,
-                  decoration: InputDecoration(
-                    prefixIcon: Padding(
-                      padding: EdgeInsets.all(Get.width * 0.004),
-                      child: Image(
-                        image: AssetImage("assets/images/Calendar.png"),
-                        height: 5,
-                        width: 5,
-                        //fit: BoxFit.fill,
-                      ),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                        vertical: Get.height * 0.025,
-                        horizontal: Get.width * 0.03),
-                    labelText: "JOINING DATE",
-                    labelStyle: TextStyle(
-                        color: AppColor.secondaryColor,
-                        fontSize: Get.height * 0.017,
-                        fontFamily: "Inter",
-                        fontWeight: FontWeight.w500),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: Get.width * 0.02,
-              ),
-              Container(
-                height: Get.height * 0.07,
-                width: Get.width * 0.15,
-                child: TextFormField(
-                  controller: addressController,
-                  decoration: InputDecoration(
-                    prefixIcon: Padding(
-                      padding: EdgeInsets.all(Get.width * 0.004),
-                      child: Image(
-                        image: AssetImage("assets/images/Visit.png"),
-                        height: 5,
-                        width: 5,
-                        //fit: BoxFit.fill,
-                      ),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                        vertical: Get.height * 0.025,
-                        horizontal: Get.width * 0.03),
-                    labelText: "ADDRESS",
-                    labelStyle: TextStyle(
-                        color: AppColor.secondaryColor,
-                        fontSize: Get.height * 0.017,
-                        fontFamily: "Inter",
-                        fontWeight: FontWeight.w500),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.greyColor),
-                      borderRadius: BorderRadius.circular(Get.height * 0.012),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(
-          height: Get.height * 0.02,
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
-          child: Row(
-            children: [
-              Container(
-                height: Get.height * 0.14,
-                width: Get.width * 0.15,
-                //color: Colors.yellow,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Total Fess",
-                      style: TextStyle(
-                        color: AppColor.blackColor,
-                        fontSize: Get.height * 0.023,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: "Inter",
+                    Container(
+                      height: Get.height * 0.1,
+                      width: Get.width * 0.045,
+                      child: Stack(
+                        children: [
+                          Container(
+                            height: Get.height * 0.09,
+                            width: Get.width * 0.045,
+                            decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.circular(Get.height * 0.012),
+                            ),
+                            child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(Get.height * 0.012),
+                              child: imageAvailable == false
+                                  ? Image.asset(
+                                      "assets/images/person.image.png",
+                                      fit: BoxFit.cover,
+                                      height: Get.height * 0.09,
+                                      width: Get.width * 0.045,
+                                    )
+                                  : Image.memory(
+                                      imageFile!,
+                                      fit: BoxFit.cover,
+                                      height: Get.height * 0.09,
+                                      width: Get.width * 0.045,
+                                    ),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: GestureDetector(
+                              onTap: chooseImage1,
+                              child: Container(
+                                height: Get.height * 0.03,
+                                width: Get.width * 0.03,
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: AppColor.whiteColor, width: 1),
+                                    color: Colors.grey.withOpacity(0.5),
+                                    shape: BoxShape.circle),
+                                child: Center(
+                                    child: Icon(
+                                  Icons.camera_alt_outlined,
+                                  color: AppColor.whiteColor,
+                                  size: Get.height * 0.020,
+                                )),
+                              ),
+                            ),
+                          ),
+                          /*_image == null
+                              ? SizedBox()
+                              : Positioned(
+                                  right: -5,
+                                  top: 0,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _image = null;
+                                      });
+                                    },
+                                    child: Container(
+                                      height: Get.height * 0.025,
+                                      width: Get.width * 0.025,
+                                      decoration: BoxDecoration(
+                                          color: Colors.red.shade700,
+                                          shape: BoxShape.circle),
+                                      child: Icon(
+                                        Icons.close,
+                                        size: Get.height * 0.018,
+                                        color: AppColor.whiteColor,
+                                      ),
+                                    ),
+                                  ))*/
+                        ],
                       ),
-                    ),
-                    SizedBox(
-                      height: Get.height * 0.02,
                     ),
                     Container(
                       height: Get.height * 0.07,
-                      width: Get.width * 0.15,
+                      width: Get.width * 0.13,
                       child: TextFormField(
-                        controller: feesController,
+                        controller: fullNameController,
                         decoration: InputDecoration(
                           prefixIcon: Padding(
                             padding: EdgeInsets.all(Get.width * 0.004),
                             child: Image(
-                              image:
-                                  AssetImage("assets/images/Activity Feed.png"),
+                              image: AssetImage("assets/images/User.png"),
                               height: 5,
                               width: 5,
                               //fit: BoxFit.fill,
                             ),
                           ),
                           contentPadding: EdgeInsets.symmetric(
-                              vertical: Get.height * 0.025,
-                              horizontal: Get.width * 0.03),
-                          labelText: "Fees",
+                            vertical: Get.height * 0.025,
+                          ),
+                          labelText: "STUDENT FULL NAME",
+                          labelStyle: TextStyle(
+                              color: AppColor.secondaryColor,
+                              fontSize: Get.height * 0.017,
+                              fontFamily: "Inter",
+                              fontWeight: FontWeight.w500),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColor.greyColor),
+                            borderRadius:
+                                BorderRadius.circular(Get.height * 0.012),
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColor.greyColor),
+                            borderRadius:
+                                BorderRadius.circular(Get.height * 0.012),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColor.greyColor),
+                            borderRadius:
+                                BorderRadius.circular(Get.height * 0.012),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      height: Get.height * 0.07,
+                      width: Get.width * 0.13,
+                      child: TextFormField(
+                        controller: emailController,
+                        validator: (String? value) {
+                          if (value!.isEmpty) {
+                            return 'Please a Enter';
+                          }
+                          if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
+                            return 'Please a valid Email';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          prefixIcon: Padding(
+                            padding: EdgeInsets.all(Get.width * 0.004),
+                            child: Image(
+                              image: AssetImage("assets/images/Mail.png"),
+                              height: 5,
+                              width: 5,
+                              //fit: BoxFit.fill,
+                            ),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: Get.height * 0.025,
+                          ),
+                          labelText: "EMAIL ADDRESS",
                           labelStyle: TextStyle(
                               color: AppColor.secondaryColor,
                               fontSize: Get.height * 0.017,
@@ -1804,198 +1848,842 @@ class _WebViewAllStudentScreenState extends State<WebViewAllStudentScreen> {
                 ),
               ),
               SizedBox(
-                width: Get.width * 0.02,
+                height: Get.height * 0.02,
               ),
-              Container(
-                height: Get.height * 0.14,
-                width: Get.width * 0.15,
-                // color: Colors.yellow,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Course",
-                      style: TextStyle(
-                        color: AppColor.blackColor,
-                        fontSize: Get.height * 0.023,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: "Inter",
-                      ),
-                    ),
-                    SizedBox(
-                      height: Get.height * 0.01,
-                    ),
                     Container(
-                        height: Get.height * 0.095,
-                        //color: Colors.green,
-                        child: GridView.builder(
-                          itemCount: 6,
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                  mainAxisExtent: Get.height * 0.04,
-                                  crossAxisCount: 3,
-                                  crossAxisSpacing: Get.width * 0.01,
-                                  mainAxisSpacing: Get.height * 0.01),
-                          itemBuilder: (BuildContext context, int index) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.circular(Get.height * 0.012),
-                                  color: AppColor.primaryColor),
-                              child: Center(
-                                child: Text(
-                                  "Course",
-                                  style: TextStyle(
-                                      fontSize: Get.height * 0.015,
-                                      fontWeight: FontWeight.w500,
-                                      fontFamily: "Inter",
-                                      color: AppColor.whiteColor),
-                                ),
-                              ),
-                            );
-                          },
-                        )),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(
-          height: Get.height * 0.02,
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
-          child: Row(
-            children: [
-              Container(
-                height: Get.height * 0.15,
-                width: Get.width * 0.15,
-                // color: Colors.yellow,
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Installment",
-                          style: TextStyle(
-                            color: AppColor.blackColor,
-                            fontSize: Get.height * 0.023,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: "Inter",
+                      height: Get.height * 0.07,
+                      width: Get.width * 0.16,
+                      child: TextFormField(
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(10),
+                        ],
+                        controller: mobileNoController,
+                        validator: (value) {
+                          if (value!.length != 10) {
+                            return 'Mobile Number must be of 10 digit';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          prefixIcon: Padding(
+                            padding: EdgeInsets.all(Get.width * 0.004),
+                            child: Image(
+                              image: AssetImage("assets/images/Phone.png"),
+                              height: 5,
+                              width: 5,
+                              //fit: BoxFit.fill,
+                            ),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: Get.height * 0.025,
+                          ),
+                          labelText: "MOBILE NO.",
+                          labelStyle: TextStyle(
+                              color: AppColor.secondaryColor,
+                              fontSize: Get.height * 0.017,
+                              fontFamily: "Inter",
+                              fontWeight: FontWeight.w500),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColor.greyColor),
+                            borderRadius:
+                                BorderRadius.circular(Get.height * 0.012),
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColor.greyColor),
+                            borderRadius:
+                                BorderRadius.circular(Get.height * 0.012),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColor.greyColor),
+                            borderRadius:
+                                BorderRadius.circular(Get.height * 0.012),
                           ),
                         ),
-                        Container(
-                          height: Get.height * 0.04,
-                          child: FloatingActionButton(
-                              onPressed: () {},
-                              elevation: 0.0,
-                              backgroundColor: AppColor.primaryColor,
-                              child: Icon(
-                                Icons.add,
-                                size: Get.height * 0.03,
-                                color: AppColor.whiteColor,
-                              )),
-                        )
-                      ],
+                      ),
                     ),
-                    SizedBox(
-                      height: Get.height * 0.02,
-                    ),
-                    Container(
-                        height: Get.height * 0.09,
-                        //color: Colors.green,
-                        child: GridView.builder(
-                          itemCount: 6,
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                  mainAxisExtent: Get.height * 0.038,
-                                  crossAxisCount: 3,
-                                  crossAxisSpacing: Get.width * 0.01,
-                                  mainAxisSpacing: Get.height * 0.01),
-                          itemBuilder: (BuildContext context, int index) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.circular(Get.height * 0.012),
-                                  color: AppColor.primaryColor),
-                              child: Center(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      height: Get.height * 0.013,
-                                      width: Get.width * 0.013,
-                                      decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                              color: AppColor.whiteColor)),
-                                      child: Center(
-                                        child: Text(
-                                          "1",
-                                          style: TextStyle(
-                                              fontSize: Get.height * 0.011,
-                                              fontWeight: FontWeight.w500,
-                                              fontFamily: "Inter",
-                                              color: AppColor.whiteColor),
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      "10000",
-                                      style: TextStyle(
-                                          fontSize: Get.height * 0.015,
-                                          fontWeight: FontWeight.w500,
-                                          fontFamily: "Inter",
-                                          color: AppColor.whiteColor),
-                                    ),
-                                  ],
+                    GestureDetector(
+                      onTap: () async {
+                        DateTime? _newDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime(3100),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: ColorScheme.light(
+                                  primary:
+                                      AppColor.primaryColor, // <-- SEE HERE
+                                  onPrimary:
+                                      AppColor.whiteColor, // <-- SEE HERE
+                                  onSurface:
+                                      AppColor.blackColor, // <-- SEE HERE
+                                ),
+                                textButtonTheme: TextButtonThemeData(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: AppColor
+                                        .primaryColor, // button text color
+                                  ),
                                 ),
                               ),
+                              child: child!,
                             );
                           },
-                        )),
+                        );
+                        if (_newDate != null) {
+                          setState(() {
+                            _dateTime = _newDate;
+                            dateSelected =
+                                "${_dateTime!.year}-${_dateTime!.month}-${_dateTime!.day}";
+                          });
+                        }
+                      },
+                      child: Container(
+                        height: Get.height * 0.061,
+                        width: Get.width * 0.16,
+                        margin: EdgeInsets.only(bottom: Get.height * 0.01),
+                        decoration: BoxDecoration(
+                            borderRadius:
+                                BorderRadius.circular(Get.height * 0.012),
+                            border: Border.all(color: AppColor.greyColor)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Image(
+                              image: AssetImage("assets/images/Calendar.png"),
+                              height: Get.height * 0.025,
+                              width: Get.width * 0.025,
+                              //fit: BoxFit.fill,
+                            ),
+                            _dateTime == null
+                                ? Text(
+                                    'JOINING DATE',
+                                    style: TextStyle(
+                                        color: AppColor.secondaryColor,
+                                        fontSize: Get.height * 0.017,
+                                        fontFamily: "Inter",
+                                        fontWeight: FontWeight.w600),
+                                  )
+                                : Text(
+                                    "${_dateTime!.day}-${_dateTime!.month}-${_dateTime!.year}",
+                                    style: TextStyle(
+                                      color: AppColor.blackColor,
+                                      fontSize: Get.height * 0.017,
+                                      fontFamily: "Inter",
+                                      //fontWeight: FontWeight.w400
+                                    ),
+                                  ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
               SizedBox(
-                width: Get.width * 0.02,
+                height: Get.height * 0.02,
               ),
-              Container(
-                height: Get.height * 0.15,
-                width: Get.width * 0.15,
-                //color: Colors.yellow,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    MaterialButton(
-                      onPressed: () {},
-                      shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(Get.height * 0.012)),
-                      color: AppColor.primaryColor,
-                      height: Get.height * 0.06,
-                      minWidth: Get.width * 0.15,
-                      child: Text(
-                        "Add & Save",
-                        style: TextStyle(
-                            fontSize: Get.height * 0.019,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: "Inter",
-                            color: Colors.white),
+                    Container(
+                      height: Get.height * 0.07,
+                      width: Get.width * 0.16,
+                      child: TextFormField(
+                        controller: addressController,
+                        decoration: InputDecoration(
+                          prefixIcon: Padding(
+                            padding: EdgeInsets.all(Get.width * 0.004),
+                            child: Image(
+                              image: AssetImage("assets/images/Visit.png"),
+                              height: 5,
+                              width: 5,
+                              //fit: BoxFit.fill,
+                            ),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: Get.height * 0.025,
+                          ),
+                          labelText: "ADDRESS",
+                          labelStyle: TextStyle(
+                              color: AppColor.secondaryColor,
+                              fontSize: Get.height * 0.017,
+                              fontFamily: "Inter",
+                              fontWeight: FontWeight.w500),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColor.greyColor),
+                            borderRadius:
+                                BorderRadius.circular(Get.height * 0.012),
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColor.greyColor),
+                            borderRadius:
+                                BorderRadius.circular(Get.height * 0.012),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColor.greyColor),
+                            borderRadius:
+                                BorderRadius.circular(Get.height * 0.012),
+                          ),
+                        ),
                       ),
-                    )
+                    ),
+                    GetBuilder(
+                      builder: (AddNewStudentController batchController) {
+                        return Container(
+                          height: Get.height * 0.065,
+                          width: Get.width * 0.16,
+                          child: FormField<String>(
+                            builder: (FormFieldState<String> state) {
+                              return InputDecorator(
+                                decoration: InputDecoration(
+                                  /*contentPadding:
+                                    EdgeInsets.symmetric(
+                                        vertical: Get.height * 0.025,
+                                        horizontal: Get.width * 0.03),*/
+                                  prefixIcon: Padding(
+                                    padding: EdgeInsets.all(10.0),
+                                    child: Image(
+                                      image: AssetImage(
+                                          "assets/images/batch2.png"),
+                                      height: 5,
+                                      width: 5,
+                                      fit: BoxFit.fill,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: AppColor.greyColor),
+                                    borderRadius: BorderRadius.circular(
+                                        Get.height * 0.012),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: AppColor.greyColor),
+                                    borderRadius: BorderRadius.circular(
+                                        Get.height * 0.012),
+                                  ),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    icon: Icon(
+                                      Icons.keyboard_arrow_down_outlined,
+                                      color: AppColor.secondaryColor,
+                                    ),
+                                    style: TextStyle(
+                                      fontSize: Get.height * 0.018,
+                                      //color: text_gray_color,
+                                      fontFamily: "Inter",
+                                    ),
+                                    hint: Text(
+                                      "BATCH TIME",
+                                      style: TextStyle(
+                                          color: AppColor.secondaryColor,
+                                          fontSize: Get.height * 0.017,
+                                          fontFamily: "Inter",
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                    value: batchController.batchSelected,
+                                    isExpanded: true,
+                                    isDense: true,
+                                    onChanged: (newValue) {
+                                      //batchController.setSelected(newValue!);
+                                      batchController.batchSelected = newValue!;
+                                      batchController.update();
+                                      batchController.batchesTime = newValue;
+
+                                      print(
+                                          "NEW BATCH--------------${batchController.batchesTime}");
+                                    },
+                                    items: batchController.batches
+                                        .map((valueItem) {
+                                      return DropdownMenuItem(
+                                        value: valueItem,
+                                        child: Text(
+                                          valueItem,
+                                          style: TextStyle(
+                                              color: AppColor.secondaryColor,
+                                              fontSize: Get.height * 0.017,
+                                              fontFamily: "Inter",
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
+              SizedBox(
+                height: Get.height * 0.02,
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      height: Get.height * 0.14,
+                      width: Get.width * 0.16,
+                      //color: Colors.yellow,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Total Fess",
+                            style: TextStyle(
+                              color: AppColor.blackColor,
+                              fontSize: Get.height * 0.023,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: "Inter",
+                            ),
+                          ),
+                          SizedBox(
+                            height: Get.height * 0.02,
+                          ),
+                          Container(
+                            height: Get.height * 0.07,
+                            width: Get.width * 0.16,
+                            child: TextFormField(
+                              controller: feesController,
+                              decoration: InputDecoration(
+                                prefixIcon: Padding(
+                                  padding: EdgeInsets.all(Get.width * 0.004),
+                                  child: Image(
+                                    image: AssetImage(
+                                        "assets/images/Activity Feed.png"),
+                                    height: 5,
+                                    width: 5,
+                                    //fit: BoxFit.fill,
+                                  ),
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                    vertical: Get.height * 0.025,
+                                    horizontal: Get.width * 0.03),
+                                labelText: "Fees",
+                                labelStyle: TextStyle(
+                                    color: AppColor.secondaryColor,
+                                    fontSize: Get.height * 0.017,
+                                    fontFamily: "Inter",
+                                    fontWeight: FontWeight.w500),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide:
+                                      BorderSide(color: AppColor.greyColor),
+                                  borderRadius:
+                                      BorderRadius.circular(Get.height * 0.012),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderSide:
+                                      BorderSide(color: AppColor.greyColor),
+                                  borderRadius:
+                                      BorderRadius.circular(Get.height * 0.012),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide:
+                                      BorderSide(color: AppColor.greyColor),
+                                  borderRadius:
+                                      BorderRadius.circular(Get.height * 0.012),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      height: Get.height * 0.14,
+                      width: Get.width * 0.16,
+                      // color: Colors.yellow,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Course",
+                            style: TextStyle(
+                              color: AppColor.blackColor,
+                              fontSize: Get.height * 0.023,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: "Inter",
+                            ),
+                          ),
+                          SizedBox(
+                            height: Get.height * 0.01,
+                          ),
+                          GetBuilder(
+                            builder: (AddNewStudentController controller) {
+                              return Container(
+                                  height: Get.height * 0.095,
+                                  //color: Colors.green,
+                                  child: GridView.builder(
+                                    itemCount: courseItems.length,
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                            mainAxisExtent: Get.height * 0.04,
+                                            crossAxisCount: 3,
+                                            crossAxisSpacing: Get.width * 0.01,
+                                            mainAxisSpacing: Get.height * 0.01),
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          if (!controller.course
+                                              .contains(courseItems[index])) {
+                                            print(
+                                                "COURSE ADDED-------${courseItems[index]}");
+                                            controller
+                                                .addCourse(courseItems[index]);
+                                          } else {
+                                            courseItems.forEach((element) {
+                                              print("Element---------$element");
+                                              if (courseItems[index] ==
+                                                  element) {
+                                                controller
+                                                    .removeCourse(element);
+                                              }
+                                            });
+                                          }
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                                Get.height * 0.012),
+                                            color: controller.course.contains(
+                                                    courseItems[index])
+                                                ? AppColor.primaryColor
+                                                : AppColor.sideOpenDrawerColor,
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              courseItems[index],
+                                              style: TextStyle(
+                                                  fontSize: Get.height * 0.013,
+                                                  fontWeight: FontWeight.w500,
+                                                  fontFamily: "Inter",
+                                                  color: controller.course
+                                                          .contains(courseItems[
+                                                              index])
+                                                      ? Colors.white
+                                                      : Colors.black),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ));
+                            },
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: Get.height * 0.02,
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: Get.width * 0.02),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      height: Get.height * 0.15,
+                      width: Get.width * 0.16,
+                      // color: Colors.yellow,
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Installment",
+                                style: TextStyle(
+                                  color: AppColor.blackColor,
+                                  fontSize: Get.height * 0.023,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: "Inter",
+                                ),
+                              ),
+                              Container(
+                                height: Get.height * 0.04,
+                                child: FloatingActionButton(
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return SimpleDialog(
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        Get.height * 0.012)),
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    "Installment",
+                                                    style: TextStyle(
+                                                      color: Color(0xff3F3F3F),
+                                                      fontSize:
+                                                          Get.height * 0.024,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                      fontFamily: "Inter",
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              SizedBox(
+                                                height: Get.height * 0.03,
+                                              ),
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        Get.width * 0.02),
+                                                child: TextFormField(
+                                                  // keyboardType: TextInputType
+                                                  //     .number,
+                                                  obscureText: false,
+                                                  controller: amountController,
+                                                  // validator: widget.validator,
+                                                  decoration: InputDecoration(
+                                                    prefixIcon: Icon(
+                                                      Icons
+                                                          .currency_rupee_rounded,
+                                                      color:
+                                                          AppColor.blackColor,
+                                                    ),
+                                                    contentPadding:
+                                                        EdgeInsets.symmetric(
+                                                      vertical:
+                                                          Get.height * 0.02,
+                                                    ),
+                                                    labelText: 'Amount',
+                                                    labelStyle: TextStyle(
+                                                        color: AppColor
+                                                            .secondaryColor,
+                                                        fontSize:
+                                                            Get.height * 0.015,
+                                                        fontFamily: "Inter",
+                                                        fontWeight:
+                                                            FontWeight.w400),
+                                                    focusedBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                          color: AppColor
+                                                              .blackColor),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              Get.height *
+                                                                  0.012),
+                                                    ),
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                          color: AppColor
+                                                              .greyColor),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              Get.height *
+                                                                  0.012),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height: Get.height * 0.03,
+                                              ),
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        Get.width * 0.06),
+                                                child: MaterialButton(
+                                                  height: Get.height * 0.065,
+                                                  minWidth: Get.width * 0.09,
+                                                  color: AppColor.primaryColor,
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              Get.height *
+                                                                  0.012)),
+                                                  child: Center(
+                                                    child: Text(
+                                                      "ADD",
+                                                      style: TextStyle(
+                                                          fontSize: Get.height *
+                                                              0.017,
+                                                          fontWeight:
+                                                              FontWeight.w400,
+                                                          fontFamily: "Inter",
+                                                          color: Colors.white),
+                                                    ),
+                                                  ),
+                                                  onPressed: () {
+                                                    if (amountController.text
+                                                            .trim() !=
+                                                        "") {
+                                                      //amountController.text = "1000";
+                                                      print(
+                                                          'Asssssssss${amountController.text.split('x')}');
+                                                      var first =
+                                                          amountController.text
+                                                              .split('x')
+                                                              .first;
+                                                      print(
+                                                          'first${amountController.text.split('x').first}');
+                                                      var last = int.parse(
+                                                          amountController.text
+                                                              .split('x')
+                                                              .last);
+                                                      print(
+                                                          'last${amountController.text.split('x').last.runtimeType}');
+                                                      var length =
+                                                          amountController.text
+                                                              .split('x')
+                                                              .length;
+                                                      print('length$length');
+
+                                                      if (length == 1) {
+                                                        _addNewStudentController
+                                                            .addInstallment(
+                                                                int.parse(
+                                                                    amountController
+                                                                        .text));
+                                                        print('if');
+                                                      } else {
+                                                        for (var i = 0;
+                                                            i < last;
+                                                            i++) {
+                                                          _addNewStudentController
+                                                              .addInstallment(
+                                                                  int.parse(
+                                                                      first));
+                                                          print('index$i');
+                                                        }
+                                                      }
+
+                                                      amountController.clear();
+                                                      Get.back();
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height: Get.height * 0.02,
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                    elevation: 0.0,
+                                    backgroundColor: AppColor.primaryColor,
+                                    child: Icon(
+                                      Icons.add,
+                                      size: Get.height * 0.03,
+                                      color: AppColor.whiteColor,
+                                    )),
+                              )
+                            ],
+                          ),
+                          SizedBox(
+                            height: Get.height * 0.02,
+                          ),
+                          GetBuilder<AddNewStudentController>(
+                            builder: (addNewStudentController) {
+                              return addNewStudentController
+                                      .installments.isEmpty
+                                  ? Container(
+                                      height: Get.height * 0.09,
+                                      child: Center(
+                                        child: Text(
+                                          "Please Add Installment",
+                                          style: TextStyle(
+                                              fontSize: Get.height * 0.018,
+                                              fontWeight: FontWeight.w400,
+                                              fontFamily: "Inter",
+                                              color: AppColor.secondaryColor
+                                                  .withOpacity(0.8)),
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      height: Get.height * 0.09,
+                                      //color: Colors.green,
+                                      child: GridView.builder(
+                                        itemCount: addNewStudentController
+                                            .installments.length,
+                                        gridDelegate:
+                                            SliverGridDelegateWithFixedCrossAxisCount(
+                                                mainAxisExtent:
+                                                    Get.height * 0.038,
+                                                crossAxisCount: 3,
+                                                crossAxisSpacing:
+                                                    Get.width * 0.01,
+                                                mainAxisSpacing:
+                                                    Get.height * 0.01),
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                          return GestureDetector(
+                                            onLongPress: () =>
+                                                removeInstallment(index),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          Get.height * 0.012),
+                                                  color: AppColor.primaryColor),
+                                              child: Center(
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Container(
+                                                      height:
+                                                          Get.height * 0.013,
+                                                      width: Get.width * 0.013,
+                                                      decoration: BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle,
+                                                          border: Border.all(
+                                                              color: AppColor
+                                                                  .whiteColor)),
+                                                      child: Center(
+                                                        child: Text(
+                                                          "${index + 1}",
+                                                          style: TextStyle(
+                                                              fontSize:
+                                                                  Get.height *
+                                                                      0.011,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontFamily:
+                                                                  "Inter",
+                                                              color: AppColor
+                                                                  .whiteColor),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${addNewStudentController.installments[index]}",
+                                                      style: TextStyle(
+                                                          fontSize: Get.height *
+                                                              0.015,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontFamily: "Inter",
+                                                          color: AppColor
+                                                              .whiteColor),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ));
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      height: Get.height * 0.15,
+                      width: Get.width * 0.16,
+                      //color: Colors.yellow,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          MaterialButton(
+                            onPressed: () async {
+                              print("DATETIME---------------${dateSelected}");
+                              print(
+                                  "BATCHTIME LENGTH---------------${_addNewStudentController.batches.length}");
+                              print(
+                                  "BATCHTIME VALUE---------------${_addNewStudentController.batches[1]}");
+
+                              int allInstallmentSum = 0;
+                              _addNewStudentController.installments
+                                  .forEach((element) {
+                                allInstallmentSum += element;
+                              });
+                              print(
+                                  "FEES CONTROLLER-1---------${allInstallmentSum}");
+                              print(
+                                  "FEES CONTROLLER-2--------${feesController.text}");
+                              if (int.parse(feesController.text) ==
+                                  allInstallmentSum) {
+                                print("FEES CONTROLLER-0---------");
+
+                                FocusScope.of(context).unfocus();
+
+                                if (_formkey.currentState!.validate()) {
+                                  if (fullNameController.text.trim() != "" &&
+                                      emailController.text.trim() != "" &&
+                                      mobileNoController.text.trim() != "" &&
+                                      addressController.text.trim() != "" &&
+                                      feesController.text.trim() != "") {
+                                    await updateClick();
+                                    isLoading.value = false;
+                                  } else {
+                                    isLoading.value = false;
+                                    Get.snackbar(
+                                        "Message", "Please Enter Value");
+                                  }
+                                } else {
+                                  isLoading.value = false;
+                                  Get.snackbar(
+                                      "Message", "Please Enter Valid Value");
+                                }
+                              } else {
+                                isLoading.value = false;
+                                Get.snackbar("Message",
+                                    "Please check Fees and installment");
+                              }
+                            },
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(Get.height * 0.012)),
+                            color: AppColor.primaryColor,
+                            height: Get.height * 0.06,
+                            minWidth: Get.width * 0.15,
+                            child: Text(
+                              "Add & Save",
+                              style: TextStyle(
+                                  fontSize: Get.height * 0.019,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: "Inter",
+                                  color: Colors.white),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: Get.height * 0.02,
+              ),
             ],
           ),
-        ),
-        SizedBox(
-          height: Get.height * 0.02,
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -2140,6 +2828,49 @@ class _WebViewAllStudentScreenState extends State<WebViewAllStudentScreen> {
         ),
       ),
     );
+  }
+
+  void removeInstallment(int index) {
+    showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+                title: Text("Remove Detail"),
+                content: Text("Are you sure?"),
+                actions: <Widget>[
+                  TextButton(
+                    child: Text(
+                      "OK",
+                      style: TextStyle(
+                        color: AppColor.primaryColor,
+                        fontSize: Get.height * 0.018,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: "Inter",
+                      ),
+                    ),
+                    onPressed: () async {
+                      print("Remove........");
+                      _addNewStudentController.removeInstallment(index);
+                      Get.back();
+                    },
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Get.back();
+                    },
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(
+                        color: AppColor.primaryColor.withOpacity(0.5),
+                        fontSize: Get.height * 0.018,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: "Inter",
+                      ),
+                    ),
+                  )
+                ])).then(
+      (_) => setState(() {}),
+    );
+    /*_addNewStudentController.removeInstallment(index);*/
   }
 
   onSearchTextChanged(String text) async {

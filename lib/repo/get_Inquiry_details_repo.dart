@@ -7,7 +7,7 @@ class GetInquiryDetailsRepo {
   static Future<GetInquiryDetailsResModel?> getInquiryDetailsrepo(
       int id) async {
     //Map<String, String> header = {"Authorization": '${ApiRoutes.dataToken}'};
-    Map<String, String> header = {"Authorization": 'Bearer ${bearerToken}'};
+    Map<String, String> header = {"Authorization": '${bearerToken}'};
 
     var response = await API.apiHandlers(
         Url: '${ApiRoutes.getInquiryDetails}$id',

@@ -1321,12 +1321,6 @@ class _WebviewInquiryAllStudentListScreenState
                                           borderRadius: BorderRadius.circular(
                                               Get.height * 0.012),
                                         ),
-                                        errorBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: AppColor.greyColor),
-                                          borderRadius: BorderRadius.circular(
-                                              Get.height * 0.012),
-                                        ),
                                       ),
                                       child: DropdownButtonHideUnderline(
                                         child: DropdownButton<String>(
@@ -1335,7 +1329,7 @@ class _WebviewInquiryAllStudentListScreenState
                                             color: AppColor.secondaryColor,
                                           ),
                                           style: TextStyle(
-                                            fontSize: 16,
+                                            fontSize: Get.height * 0.018,
                                             //color: text_gray_color,
                                             fontFamily: "Inter",
                                           ),

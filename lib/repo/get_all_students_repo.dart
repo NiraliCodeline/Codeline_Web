@@ -6,7 +6,7 @@ import 'package:codeline_info_responsive_ui/models/res/get_all_student_res_model
 class GetAllStudentsRepo {
   static Future<GetAllStudentsResModel?> getAllStudentsRepo() async {
     //Map<String, String> header = {"Authorization": '${ApiRoutes.dataToken}'};
-    Map<String, String> header = {"Authorization": 'Bearer ${bearerToken}'};
+    Map<String, String> header = {"Authorization": '${bearerToken}'};
 
     var response = await API.apiHandlers(
         Url: ApiRoutes.allStudents, apiTypes: ApiTypes.Get, header: header);
